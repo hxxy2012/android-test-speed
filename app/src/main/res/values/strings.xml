@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SpeedTest</string>
+
+    <!-- Navigation -->
+    <string name="nav_test">Test</string>
+    <string name="nav_history">History</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">SpeedTest</string>
+    <string name="home_start_test">Start Test</string>
+    <string name="home_stop_test">Stop Test</string>
+    <string name="home_select_server">Select Server</string>
+    <string name="home_network">Network</string>
+    <string name="home_operator">Operator</string>
+    <string name="home_ip_address">IP Address</string>
+    <string name="home_download">Download</string>
+    <string name="home_upload">Upload</string>
+    <string name="home_ping">Ping</string>
+    <string name="home_jitter">Jitter</string>
+    <string name="home_test_server">Test Server</string>
+
+    <!-- Test Phases -->
+    <string name="phase_idle">Ready</string>
+    <string name="phase_initializing">Initializing</string>
+    <string name="phase_ping">Testing Ping</string>
+    <string name="phase_download">Testing Download</string>
+    <string name="phase_upload">Testing Upload</string>
+    <string name="phase_completed">Completed</string>
+    <string name="phase_error">Error</string>
+
+    <!-- History Screen -->
+    <string name="history_title">Test History</string>
+    <string name="history_empty">No test history</string>
+    <string name="history_filter">Filter</string>
+    <string name="history_export">Export</string>
+    <string name="history_delete">Delete</string>
+
+    <!-- Filter Periods -->
+    <string name="filter_today">Today</string>
+    <string name="filter_week">This Week</string>
+    <string name="filter_month">This Month</string>
+    <string name="filter_all">All</string>
+
+    <!-- Server Screen -->
+    <string name="server_title">Select Server</string>
+    <string name="server_empty">No servers available</string>
+    <string name="server_ping_all">Ping All Servers</string>
+    <string name="server_auto_select">Auto Select</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_test">Test Settings</string>
+    <string name="settings_display">Display</string>
+    <string name="settings_auto_test">Automated Testing</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_about">About</string>
+
+    <!-- Test Settings -->
+    <string name="settings_speed_unit">Speed Unit</string>
+    <string name="settings_speed_unit_desc">Mbps or MB/s</string>
+    <string name="settings_test_duration">Test Duration</string>
+    <string name="settings_test_duration_desc">%d seconds</string>
+    <string name="settings_thread_count">Thread Count</string>
+    <string name="settings_thread_count_auto">Auto</string>
+    <string name="settings_thread_count_desc">%d threads</string>
+
+    <!-- Display Settings -->
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
+
+    <!-- Auto Test Settings -->
+    <string name="settings_auto_test_enabled">Enable Auto Test</string>
+    <string name="settings_auto_test_desc">Run tests automatically</string>
+    <string name="settings_auto_test_interval">Test Interval</string>
+    <string name="settings_auto_test_interval_desc">Every %d hours</string>
+
+    <!-- Notification Settings -->
+    <string name="settings_notifications_enabled">Enable Notifications</string>
+    <string name="settings_notifications_desc">Get notified when tests complete</string>
+
+    <!-- Data Settings -->
+    <string name="settings_clear_data">Clear All Data</string>
+    <string name="settings_clear_data_desc">Delete all test history</string>
+    <string name="settings_clear_data_confirm">Are you sure you want to delete all test history?</string>
+    <string name="settings_export_data">Export Data</string>
+
+    <!-- About Settings -->
+    <string name="settings_version">Version</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+    <string name="settings_licenses">Open Source Licenses</string>
+
+    <!-- Units -->
+    <string name="unit_mbps">Mbps</string>
+    <string name="unit_mbytes">MB/s</string>
+    <string name="unit_ms">ms</string>
+    <string name="unit_km">km</string>
+
+    <!-- Network Types -->
+    <string name="network_wifi">WiFi</string>
+    <string name="network_ethernet">Ethernet</string>
+    <string name="network_5g">5G</string>
+    <string name="network_4g">4G</string>
+    <string name="network_3g">3G</string>
+    <string name="network_2g">2G</string>
+    <string name="network_mobile">Mobile</string>
+    <string name="network_unknown">Unknown</string>
+    <string name="network_none">No Connection</string>
+
+    <!-- Errors -->
+    <string name="error_no_network">No network connection</string>
+    <string name="error_test_failed">Test failed</string>
+    <string name="error_server_unavailable">Server unavailable</string>
+    <string name="error_unknown">Unknown error occurred</string>
+
+    <!-- Permissions -->
+    <string name="permission_network_title">Network Permission</string>
+    <string name="permission_network_desc">Required to test internet speed</string>
+    <string name="permission_location_title">Location Permission</string>
+    <string name="permission_location_desc">Used to find nearest test server</string>
+
+    <!-- Common -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="confirm">Confirm</string>
+    <string name="back">Back</string>
+    <string name="loading">Loading…</string>
+</resources>
