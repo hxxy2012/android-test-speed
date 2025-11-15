@@ -27,6 +27,9 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     init {
         loadSettings()
     }
@@ -83,26 +86,34 @@ class SettingsViewModel @Inject constructor(
 
     fun setAutoTestEnabled(enabled: Boolean) {
         viewModelScope.launch {
-            preferencesManager.setAutoTestEnabled(enabled)
+            try {
+                preferencesManager.setAutoTestEnabled(enabled)
 
-            // Schedule or cancel auto test
-            if (enabled) {
-                val interval = preferencesManager.autoTestInterval.first()
-                WorkManagerScheduler.scheduleAutoSpeedTest(context, interval)
-            } else {
-                WorkManagerScheduler.cancelAutoSpeedTest(context)
+                // Schedule or cancel auto test
+                if (enabled) {
+                    val interval = preferencesManager.autoTestInterval.first()
+                    WorkManagerScheduler.scheduleAutoSpeedTest(context, interval)
+                } else {
+                    WorkManagerScheduler.cancelAutoSpeedTest(context)
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to update auto test: ${e.message}"
             }
         }
     }
 
     fun setAutoTestInterval(hours: Int) {
         viewModelScope.launch {
-            preferencesManager.setAutoTestInterval(hours)
+            try {
+                preferencesManager.setAutoTestInterval(hours)
 
-            // Reschedule if auto test is enabled
-            val isEnabled = preferencesManager.autoTestEnabled.first()
-            if (isEnabled) {
-                WorkManagerScheduler.scheduleAutoSpeedTest(context, hours)
+                // Reschedule if auto test is enabled
+                val isEnabled = preferencesManager.autoTestEnabled.first()
+                if (isEnabled) {
+                    WorkManagerScheduler.scheduleAutoSpeedTest(context, hours)
+                }
+            } catch (e: Exception) {
+                _error.value = "Failed to update interval: ${e.message}"
             }
         }
     }
@@ -118,9 +129,13 @@ class SettingsViewModel @Inject constructor(
             try {
                 speedTestRepository.deleteAllResults()
             } catch (e: Exception) {
-                // Handle error
+                _error.value = "Failed to clear data: ${e.message}"
             }
         }
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }
 

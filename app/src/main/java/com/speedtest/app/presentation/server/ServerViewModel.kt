@@ -67,6 +67,10 @@ class ServerViewModel @Inject constructor(
     fun selectServer(server: Server) {
         _uiState.update { it.copy(selectedServer = server) }
     }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
 }
 
 /**

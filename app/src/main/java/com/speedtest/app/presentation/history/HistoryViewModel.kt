@@ -99,6 +99,9 @@ class HistoryViewModel @Inject constructor(
     suspend fun exportToCsv(): Result<Uri> {
         return try {
             val results = _uiState.value.results
+            if (results.isEmpty()) {
+                return Result.failure(Exception("No test results to export"))
+            }
             ExportUtils.exportToCsv(context, results)
         } catch (e: Exception) {
             Result.failure(e)
@@ -108,6 +111,9 @@ class HistoryViewModel @Inject constructor(
     suspend fun exportToJson(): Result<Uri> {
         return try {
             val results = _uiState.value.results
+            if (results.isEmpty()) {
+                return Result.failure(Exception("No test results to export"))
+            }
             ExportUtils.exportToJson(context, results)
         } catch (e: Exception) {
             Result.failure(e)

@@ -47,7 +47,10 @@ fun HistoryScreen(
                 },
                 actions = {
                     // Export button
-                    IconButton(onClick = { showExportMenu = true }) {
+                    IconButton(
+                        onClick = { showExportMenu = true },
+                        enabled = uiState.results.isNotEmpty() && !isExporting
+                    ) {
                         Icon(Icons.Default.Share, contentDescription = "Export")
                     }
                     DropdownMenu(
