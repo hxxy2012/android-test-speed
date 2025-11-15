@@ -66,9 +66,15 @@ class SpeedTestEngine @Inject constructor() {
 
         } catch (e: Exception) {
             Log.e(TAG, "Test failed", e)
+            val errorMessage = when (e) {
+                is IOException -> "Network connection error. Please check your internet connection."
+                is java.net.UnknownHostException -> "Cannot reach test server. Please check server settings."
+                is java.net.SocketTimeoutException -> "Connection timeout. Server may be unavailable."
+                else -> e.message ?: "Unknown error occurred"
+            }
             emit(TestProgress(
                 phase = TestPhase.ERROR,
-                error = e.message ?: "Unknown error"
+                error = errorMessage
             ))
         }
     }

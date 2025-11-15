@@ -26,6 +26,7 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showClearDataDialog by remember { mutableStateOf(false) }
 
     // Show error message if any
     error?.let { errorMessage ->
@@ -146,7 +147,38 @@ fun SettingsScreen(
                     icon = Icons.Default.Delete,
                     title = "Clear All Data",
                     subtitle = "Delete all test history",
-                    onClick = { /* Show confirmation dialog */ }
+                    onClick = { showClearDataDialog = true }
+                )
+            }
+
+            // Clear Data Confirmation Dialog
+            if (showClearDataDialog) {
+                AlertDialog(
+                    onDismissRequest = { showClearDataDialog = false },
+                    icon = {
+                        Icon(
+                            Icons.Default.Warning,
+                            contentDescription = "Warning",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    title = { Text("Clear All Data?") },
+                    text = { Text("This will permanently delete all your test history. This action cannot be undone.") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.clearAllData()
+                                showClearDataDialog = false
+                            }
+                        ) {
+                            Text("Delete", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showClearDataDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
                 )
             }
 

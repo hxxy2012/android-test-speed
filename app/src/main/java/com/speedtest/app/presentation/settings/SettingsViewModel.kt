@@ -128,6 +128,7 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 speedTestRepository.deleteAllResults()
+                _error.value = "All test history has been deleted"
             } catch (e: Exception) {
                 _error.value = "Failed to clear data: ${e.message}"
             }
