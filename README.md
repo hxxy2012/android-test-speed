@@ -36,6 +36,15 @@ A professional Android network speed testing application built with **Kotlin**, 
   - Test duration configuration
   - Thread count settings
 
+- ✅ **Advanced Features**
+  - Automatic scheduled tests (WorkManager)
+  - Foreground service for reliable testing
+  - Push notifications for test completion
+  - Data export (CSV/JSON formats)
+  - Runtime permission handling
+  - Speed history charts and visualization
+  - Animated UI components
+
 ## Technology Stack
 
 ### Architecture
