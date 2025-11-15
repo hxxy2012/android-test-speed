@@ -52,6 +52,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Foreground Service for Speed Test -->
+        <service
+            android:name=".service.SpeedTestService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
         <!-- Work Manager for scheduled tests -->
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -61,6 +68,17 @@
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
                 android:value="androidx.startup" />
+        </provider>
+
+        <!-- File Provider for sharing exported data -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
 
     </application>

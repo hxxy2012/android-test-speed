@@ -1,11 +1,15 @@
 package com.speedtest.app.presentation.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.speedtest.app.data.local.datastore.PreferencesManager
 import com.speedtest.app.data.local.datastore.SpeedUnit
 import com.speedtest.app.data.local.datastore.ThemeMode
+import com.speedtest.app.domain.repository.SpeedTestRepository
+import com.speedtest.app.worker.WorkManagerScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,7 +19,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager
+    @ApplicationContext private val context: Context,
+    private val preferencesManager: PreferencesManager,
+    private val speedTestRepository: SpeedTestRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -78,12 +84,26 @@ class SettingsViewModel @Inject constructor(
     fun setAutoTestEnabled(enabled: Boolean) {
         viewModelScope.launch {
             preferencesManager.setAutoTestEnabled(enabled)
+
+            // Schedule or cancel auto test
+            if (enabled) {
+                val interval = preferencesManager.autoTestInterval.first()
+                WorkManagerScheduler.scheduleAutoSpeedTest(context, interval)
+            } else {
+                WorkManagerScheduler.cancelAutoSpeedTest(context)
+            }
         }
     }
 
     fun setAutoTestInterval(hours: Int) {
         viewModelScope.launch {
             preferencesManager.setAutoTestInterval(hours)
+
+            // Reschedule if auto test is enabled
+            val isEnabled = preferencesManager.autoTestEnabled.first()
+            if (isEnabled) {
+                WorkManagerScheduler.scheduleAutoSpeedTest(context, hours)
+            }
         }
     }
 
@@ -95,7 +115,11 @@ class SettingsViewModel @Inject constructor(
 
     fun clearAllData() {
         viewModelScope.launch {
-            // TODO: Implement clear all data
+            try {
+                speedTestRepository.deleteAllResults()
+            } catch (e: Exception) {
+                // Handle error
+            }
         }
     }
 }

@@ -1,10 +1,15 @@
 package com.speedtest.app.presentation.history
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.speedtest.app.data.local.entity.SpeedTestResult
+import com.speedtest.app.domain.repository.SpeedTestRepository
 import com.speedtest.app.domain.usecase.GetTestHistoryUseCase
+import com.speedtest.app.utils.ExportUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -15,7 +20,9 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
-    private val getTestHistoryUseCase: GetTestHistoryUseCase
+    @ApplicationContext private val context: Context,
+    private val getTestHistoryUseCase: GetTestHistoryUseCase,
+    private val speedTestRepository: SpeedTestRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HistoryUiState())
@@ -70,11 +77,45 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun deleteResult(resultId: Long) {
-        // TODO: Implement delete functionality
+        viewModelScope.launch {
+            try {
+                speedTestRepository.deleteResult(resultId)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
     }
 
-    fun exportData() {
-        // TODO: Implement export functionality
+    fun deleteAllResults() {
+        viewModelScope.launch {
+            try {
+                speedTestRepository.deleteAllResults()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    suspend fun exportToCsv(): Result<Uri> {
+        return try {
+            val results = _uiState.value.results
+            ExportUtils.exportToCsv(context, results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun exportToJson(): Result<Uri> {
+        return try {
+            val results = _uiState.value.results
+            ExportUtils.exportToJson(context, results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun shareExportedFile(uri: Uri, mimeType: String) {
+        ExportUtils.shareFile(context, uri, mimeType)
     }
 }
 
