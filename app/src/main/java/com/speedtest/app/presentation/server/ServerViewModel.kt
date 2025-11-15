@@ -2,6 +2,7 @@ package com.speedtest.app.presentation.server
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.speedtest.app.data.local.datastore.PreferencesManager
 import com.speedtest.app.data.local.entity.Server
 import com.speedtest.app.domain.usecase.GetServersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +15,8 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class ServerViewModel @Inject constructor(
-    private val getServersUseCase: GetServersUseCase
+    private val getServersUseCase: GetServersUseCase,
+    private val preferencesManager: PreferencesManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ServerUiState())
@@ -31,20 +33,28 @@ class ServerViewModel @Inject constructor(
             try {
                 // Sync servers from remote
                 getServersUseCase.syncServers()
-
-                // Load servers
-                getServersUseCase.getAllActiveServers().collect { servers ->
-                    _uiState.update { it.copy(
-                        servers = servers,
-                        isLoading = false
-                    ) }
-                }
             } catch (e: Exception) {
                 _uiState.update { it.copy(
                     isLoading = false,
                     error = e.message
                 ) }
+                return@launch
             }
+
+            // Load servers (this is a continuous flow)
+            getServersUseCase.getAllActiveServers()
+                .catch { e ->
+                    _uiState.update { it.copy(
+                        isLoading = false,
+                        error = e.message
+                    ) }
+                }
+                .collect { servers ->
+                    _uiState.update { it.copy(
+                        servers = servers,
+                        isLoading = false
+                    ) }
+                }
         }
     }
 
@@ -65,7 +75,11 @@ class ServerViewModel @Inject constructor(
     }
 
     fun selectServer(server: Server) {
-        _uiState.update { it.copy(selectedServer = server) }
+        viewModelScope.launch {
+            _uiState.update { it.copy(selectedServer = server) }
+            // Save to preferences
+            preferencesManager.setSelectedServerId(server.id)
+        }
     }
 
     fun clearError() {

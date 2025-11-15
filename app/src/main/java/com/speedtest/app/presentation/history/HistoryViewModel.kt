@@ -56,14 +56,21 @@ class HistoryViewModel @Inject constructor(
                     }
                 }
 
-                results.collect { list ->
-                    _uiState.update { it.copy(
-                        results = list,
-                        isLoading = false,
-                        filterPeriod = period,
-                        filterNetworkType = networkType
-                    ) }
-                }
+                results
+                    .catch { e ->
+                        _uiState.update { it.copy(
+                            isLoading = false,
+                            error = e.message
+                        ) }
+                    }
+                    .collect { list ->
+                        _uiState.update { it.copy(
+                            results = list,
+                            isLoading = false,
+                            filterPeriod = period,
+                            filterNetworkType = networkType
+                        ) }
+                    }
             }
         }
     }

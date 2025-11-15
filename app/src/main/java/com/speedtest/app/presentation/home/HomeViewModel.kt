@@ -36,6 +36,7 @@ class HomeViewModel @Inject constructor(
     init {
         observeNetworkInfo()
         observeSpeedUnit()
+        observeSelectedServer()
         loadServers()
     }
 
@@ -51,6 +52,19 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesManager.speedUnit.collect { unit ->
                 _uiState.update { it.copy(speedUnit = unit) }
+            }
+        }
+    }
+
+    private fun observeSelectedServer() {
+        viewModelScope.launch {
+            preferencesManager.selectedServerId.collect { serverId ->
+                if (serverId != null) {
+                    val server = getServersUseCase.getServerById(serverId)
+                    if (server != null) {
+                        _uiState.update { it.copy(selectedServer = server) }
+                    }
+                }
             }
         }
     }

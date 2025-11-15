@@ -107,7 +107,11 @@ fun ServerScreen(
                     ServerCard(
                         server = server,
                         isSelected = server.id == uiState.selectedServer?.id,
-                        onClick = { viewModel.selectServer(server) }
+                        onClick = {
+                            viewModel.selectServer(server)
+                            // Navigate back after selection
+                            navController.navigateUp()
+                        }
                     )
                 }
             }
