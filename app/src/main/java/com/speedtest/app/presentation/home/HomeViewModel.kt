@@ -125,7 +125,11 @@ class HomeViewModel @Inject constructor(
 
     fun selectServer(serverId: String?) {
         viewModelScope.launch {
-            val server = serverId?.let { getServersUseCase.getFastestServer() }
+            val server = if (serverId != null) {
+                getServersUseCase.getServerById(serverId)
+            } else {
+                getServersUseCase.getFastestServer()
+            }
             _uiState.update { it.copy(selectedServer = server) }
 
             // Save preference

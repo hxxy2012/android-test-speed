@@ -105,11 +105,10 @@ class SpeedTestEngine @Inject constructor() {
                     .head()
                     .build()
 
-                val response = httpClient.newCall(request).execute()
-                response.close()
-
-                val ping = (System.currentTimeMillis() - startTime).toInt()
-                pings.add(ping)
+                httpClient.newCall(request).execute().use { response ->
+                    val ping = (System.currentTimeMillis() - startTime).toInt()
+                    pings.add(ping)
+                }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Ping failed: ${e.message}")
@@ -171,24 +170,22 @@ class SpeedTestEngine @Inject constructor() {
                             .build()
 
                         val chunkStartTime = System.currentTimeMillis()
-                        val response = httpClient.newCall(request).execute()
+                        httpClient.newCall(request).execute().use { response ->
+                            val bytes = response.body?.bytes()?.size?.toLong() ?: 0
+                            threadBytes += bytes
+                            totalBytes.addAndGet(bytes)
 
-                        val bytes = response.body?.bytes()?.size?.toLong() ?: 0
-                        threadBytes += bytes
-                        totalBytes.addAndGet(bytes)
-
-                        val chunkDuration = System.currentTimeMillis() - chunkStartTime
-                        if (chunkDuration > 0) {
-                            val speed = (bytes * 8.0) / (chunkDuration / 1000.0) / 1_000_000.0 // Mbps
-                            synchronized(speeds) {
-                                speeds.add(speed)
-                                if (speed > peakSpeed) {
-                                    peakSpeed = speed
+                            val chunkDuration = System.currentTimeMillis() - chunkStartTime
+                            if (chunkDuration > 0) {
+                                val speed = (bytes * 8.0) / (chunkDuration / 1000.0) / 1_000_000.0 // Mbps
+                                synchronized(speeds) {
+                                    speeds.add(speed)
+                                    if (speed > peakSpeed) {
+                                        peakSpeed = speed
+                                    }
                                 }
                             }
                         }
-
-                        response.close()
 
                     } catch (e: Exception) {
                         Log.e(TAG, "Download chunk failed: ${e.message}")
@@ -266,23 +263,21 @@ class SpeedTestEngine @Inject constructor() {
                             .build()
 
                         val chunkStartTime = System.currentTimeMillis()
-                        val response = httpClient.newCall(request).execute()
+                        httpClient.newCall(request).execute().use { response ->
+                            threadBytes += size
+                            totalBytes.addAndGet(size.toLong())
 
-                        threadBytes += size
-                        totalBytes.addAndGet(size.toLong())
-
-                        val chunkDuration = System.currentTimeMillis() - chunkStartTime
-                        if (chunkDuration > 0) {
-                            val speed = (size * 8.0) / (chunkDuration / 1000.0) / 1_000_000.0 // Mbps
-                            synchronized(speeds) {
-                                speeds.add(speed)
-                                if (speed > peakSpeed) {
-                                    peakSpeed = speed
+                            val chunkDuration = System.currentTimeMillis() - chunkStartTime
+                            if (chunkDuration > 0) {
+                                val speed = (size * 8.0) / (chunkDuration / 1000.0) / 1_000_000.0 // Mbps
+                                synchronized(speeds) {
+                                    speeds.add(speed)
+                                    if (speed > peakSpeed) {
+                                        peakSpeed = speed
+                                    }
                                 }
                             }
                         }
-
-                        response.close()
 
                     } catch (e: Exception) {
                         Log.e(TAG, "Upload chunk failed: ${e.message}")

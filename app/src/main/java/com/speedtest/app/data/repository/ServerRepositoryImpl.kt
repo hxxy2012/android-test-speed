@@ -60,15 +60,14 @@ class ServerRepositoryImpl @Inject constructor(
                 .head()
                 .build()
 
-            val response = httpClient.newCall(request).execute()
-            response.close()
+            httpClient.newCall(request).execute().use { response ->
+                val ping = (System.currentTimeMillis() - startTime).toInt()
 
-            val ping = (System.currentTimeMillis() - startTime).toInt()
+                // Update server ping in database
+                serverDao.updateServerPing(server.id, ping)
 
-            // Update server ping in database
-            serverDao.updateServerPing(server.id, ping)
-
-            ping
+                ping
+            }
         } catch (e: Exception) {
             -1
         }

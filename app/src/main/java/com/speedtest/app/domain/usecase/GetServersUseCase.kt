@@ -19,6 +19,10 @@ class GetServersUseCase @Inject constructor(
         return repository.getServersByCountry(country)
     }
 
+    suspend fun getServerById(id: String): Server? {
+        return repository.getServerById(id)
+    }
+
     suspend fun getNearestServer(): Server? {
         return repository.getNearestServer()
     }

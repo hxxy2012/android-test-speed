@@ -123,6 +123,10 @@ class HistoryViewModel @Inject constructor(
     fun shareExportedFile(uri: Uri, mimeType: String) {
         ExportUtils.shareFile(context, uri, mimeType)
     }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
 }
 
 /**

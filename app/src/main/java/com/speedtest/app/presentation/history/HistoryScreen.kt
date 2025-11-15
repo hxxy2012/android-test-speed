@@ -225,6 +225,7 @@ fun HistoryScreen(
         uiState.error?.let { error ->
             LaunchedEffect(error) {
                 snackbarHostState.showSnackbar(error)
+                viewModel.clearError()
             }
         }
 

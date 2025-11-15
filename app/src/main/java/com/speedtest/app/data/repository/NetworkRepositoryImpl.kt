@@ -111,11 +111,12 @@ class NetworkRepositoryImpl @Inject constructor(
                         .url(service)
                         .build()
 
-                    val response = httpClient.newCall(request).execute()
-                    if (response.isSuccessful) {
-                        val ip = response.body?.string()?.trim()
-                        if (!ip.isNullOrBlank()) {
-                            return@withContext ip
+                    httpClient.newCall(request).execute().use { response ->
+                        if (response.isSuccessful) {
+                            val ip = response.body?.string()?.trim()
+                            if (!ip.isNullOrBlank()) {
+                                return@withContext ip
+                            }
                         }
                     }
                 } catch (e: Exception) {
