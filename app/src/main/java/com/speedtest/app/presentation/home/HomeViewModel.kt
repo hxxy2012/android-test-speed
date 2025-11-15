@@ -1,5 +1,6 @@
 package com.speedtest.app.presentation.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.speedtest.app.data.local.datastore.PreferencesManager
@@ -10,7 +11,9 @@ import com.speedtest.app.domain.model.TestProgress
 import com.speedtest.app.domain.usecase.ExecuteSpeedTestUseCase
 import com.speedtest.app.domain.usecase.GetNetworkInfoUseCase
 import com.speedtest.app.domain.usecase.GetServersUseCase
+import com.speedtest.app.utils.NotificationHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,6 +23,7 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val executeSpeedTestUseCase: ExecuteSpeedTestUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getServersUseCase: GetServersUseCase,
@@ -69,6 +73,13 @@ class HomeViewModel @Inject constructor(
     fun startTest() {
         viewModelScope.launch {
             try {
+                // Check network connection first
+                val networkInfo = _uiState.value.networkInfo
+                if (!networkInfo.isConnected) {
+                    _uiState.update { it.copy(error = "No network connection") }
+                    return@launch
+                }
+
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
                 val serverId = _uiState.value.selectedServer?.id
@@ -78,6 +89,19 @@ class HomeViewModel @Inject constructor(
                         testProgress = progress,
                         isLoading = progress.isInProgress
                     ) }
+
+                    // Show notification when test completes
+                    if (progress.isCompleted) {
+                        val notificationEnabled = preferencesManager.notificationEnabled.first()
+                        if (notificationEnabled) {
+                            NotificationHelper.showTestCompletionNotification(
+                                context,
+                                downloadSpeed = progress.avgDownloadSpeed,
+                                uploadSpeed = progress.avgUploadSpeed,
+                                ping = progress.avgPing
+                            )
+                        }
+                    }
                 }
 
             } catch (e: Exception) {

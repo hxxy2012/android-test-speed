@@ -1,6 +1,7 @@
 package com.speedtest.app
 
 import android.app.Application
+import com.speedtest.app.utils.NotificationHelper
 import dagger.hilt.android.HiltAndroidApp
 
 /**
@@ -11,6 +12,8 @@ class SpeedTestApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Initialize app-wide components if needed
+
+        // Initialize notification channels
+        NotificationHelper.createNotificationChannel(this)
     }
 }

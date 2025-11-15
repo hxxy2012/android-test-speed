@@ -16,6 +16,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.speedtest.app.data.local.entity.SpeedTestResult
+import com.speedtest.app.presentation.components.PingHistoryChart
+import com.speedtest.app.presentation.components.SpeedHistoryChart
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,9 +29,14 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope()
     var showFilterMenu by remember { mutableStateOf(false) }
+    var showExportMenu by remember { mutableStateOf(false) }
+    var isExporting by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text("Test History") },
@@ -38,6 +46,53 @@ fun HistoryScreen(
                     }
                 },
                 actions = {
+                    // Export button
+                    IconButton(onClick = { showExportMenu = true }) {
+                        Icon(Icons.Default.Share, contentDescription = "Export")
+                    }
+                    DropdownMenu(
+                        expanded = showExportMenu,
+                        onDismissRequest = { showExportMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Export as CSV") },
+                            onClick = {
+                                showExportMenu = false
+                                coroutineScope.launch {
+                                    isExporting = true
+                                    val result = viewModel.exportToCsv()
+                                    isExporting = false
+                                    result.onSuccess { uri ->
+                                        viewModel.shareExportedFile(uri, "text/csv")
+                                        snackbarHostState.showSnackbar("CSV exported successfully")
+                                    }.onFailure { error ->
+                                        snackbarHostState.showSnackbar("Export failed: ${error.message}")
+                                    }
+                                }
+                            },
+                            enabled = !isExporting
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Export as JSON") },
+                            onClick = {
+                                showExportMenu = false
+                                coroutineScope.launch {
+                                    isExporting = true
+                                    val result = viewModel.exportToJson()
+                                    isExporting = false
+                                    result.onSuccess { uri ->
+                                        viewModel.shareExportedFile(uri, "application/json")
+                                        snackbarHostState.showSnackbar("JSON exported successfully")
+                                    }.onFailure { error ->
+                                        snackbarHostState.showSnackbar("Export failed: ${error.message}")
+                                    }
+                                }
+                            },
+                            enabled = !isExporting
+                        )
+                    }
+
+                    // Filter button
                     IconButton(onClick = { showFilterMenu = true }) {
                         Icon(Icons.Default.FilterList, contentDescription = "Filter")
                     }
@@ -100,8 +155,95 @@ fun HistoryScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                // Speed Chart Section
+                if (uiState.results.size >= 2) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Speed Trends",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                SpeedHistoryChart(
+                                    results = uiState.results.takeLast(10).reversed(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Ping Chart Section
+                if (uiState.results.size >= 2) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "Ping History",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                PingHistoryChart(
+                                    results = uiState.results.takeLast(10).reversed(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(200.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Results List
                 items(uiState.results) { result ->
                     HistoryResultCard(result)
+                }
+            }
+        }
+
+        // Show error message if any
+        uiState.error?.let { error ->
+            LaunchedEffect(error) {
+                snackbarHostState.showSnackbar(error)
+            }
+        }
+
+        // Show loading overlay when exporting
+        if (isExporting) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator()
+                        Text("Exporting...")
+                    }
                 }
             }
         }
