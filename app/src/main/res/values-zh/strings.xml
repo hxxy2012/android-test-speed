@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">网速测试</string>
+
+    <!-- Navigation -->
+    <string name="nav_test">测试</string>
+    <string name="nav_history">历史</string>
+    <string name="nav_settings">设置</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">网速测试</string>
+    <string name="home_start_test">开始测试</string>
+    <string name="home_stop_test">停止测试</string>
+    <string name="home_select_server">选择服务器</string>
+    <string name="home_network">网络</string>
+    <string name="home_operator">运营商</string>
+    <string name="home_ip_address">IP地址</string>
+    <string name="home_download">下载</string>
+    <string name="home_upload">上传</string>
+    <string name="home_ping">延迟</string>
+    <string name="home_jitter">抖动</string>
+    <string name="home_test_server">测试服务器</string>
+
+    <!-- Test Phases -->
+    <string name="phase_idle">准备就绪</string>
+    <string name="phase_initializing">初始化中</string>
+    <string name="phase_ping">测试延迟中</string>
+    <string name="phase_download">测试下载中</string>
+    <string name="phase_upload">测试上传中</string>
+    <string name="phase_completed">已完成</string>
+    <string name="phase_error">错误</string>
+
+    <!-- History Screen -->
+    <string name="history_title">测试历史</string>
+    <string name="history_empty">暂无测试历史</string>
+    <string name="history_filter">筛选</string>
+    <string name="history_export">导出</string>
+    <string name="history_delete">删除</string>
+
+    <!-- Filter Periods -->
+    <string name="filter_today">今天</string>
+    <string name="filter_week">本周</string>
+    <string name="filter_month">本月</string>
+    <string name="filter_all">全部</string>
+
+    <!-- Server Screen -->
+    <string name="server_title">选择服务器</string>
+    <string name="server_empty">暂无可用服务器</string>
+    <string name="server_ping_all">Ping所有服务器</string>
+    <string name="server_auto_select">自动选择</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">设置</string>
+    <string name="settings_test">测试设置</string>
+    <string name="settings_display">显示</string>
+    <string name="settings_auto_test">自动测试</string>
+    <string name="settings_notifications">通知</string>
+    <string name="settings_data">数据</string>
+    <string name="settings_about">关于</string>
+
+    <!-- Test Settings -->
+    <string name="settings_speed_unit">速度单位</string>
+    <string name="settings_speed_unit_desc">Mbps 或 MB/s</string>
+    <string name="settings_test_duration">测试时长</string>
+    <string name="settings_test_duration_desc">%d 秒</string>
+    <string name="settings_thread_count">线程数</string>
+    <string name="settings_thread_count_auto">自动</string>
+    <string name="settings_thread_count_desc">%d 个线程</string>
+
+    <!-- Display Settings -->
+    <string name="settings_theme">主题</string>
+    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_theme_light">浅色</string>
+    <string name="settings_theme_dark">深色</string>
+    <string name="settings_language">语言</string>
+
+    <!-- Auto Test Settings -->
+    <string name="settings_auto_test_enabled">启用自动测试</string>
+    <string name="settings_auto_test_desc">自动运行速度测试</string>
+    <string name="settings_auto_test_interval">测试间隔</string>
+    <string name="settings_auto_test_interval_desc">每 %d 小时</string>
+
+    <!-- Notification Settings -->
+    <string name="settings_notifications_enabled">启用通知</string>
+    <string name="settings_notifications_desc">测试完成时通知</string>
+
+    <!-- Data Settings -->
+    <string name="settings_clear_data">清除所有数据</string>
+    <string name="settings_clear_data_desc">删除所有测试历史</string>
+    <string name="settings_clear_data_confirm">确定要删除所有测试历史吗？</string>
+    <string name="settings_export_data">导出数据</string>
+
+    <!-- About Settings -->
+    <string name="settings_version">版本</string>
+    <string name="settings_privacy_policy">隐私政策</string>
+    <string name="settings_licenses">开源许可</string>
+
+    <!-- Units -->
+    <string name="unit_mbps">Mbps</string>
+    <string name="unit_mbytes">MB/s</string>
+    <string name="unit_ms">毫秒</string>
+    <string name="unit_km">公里</string>
+
+    <!-- Network Types -->
+    <string name="network_wifi">WiFi</string>
+    <string name="network_ethernet">以太网</string>
+    <string name="network_5g">5G</string>
+    <string name="network_4g">4G</string>
+    <string name="network_3g">3G</string>
+    <string name="network_2g">2G</string>
+    <string name="network_mobile">移动网络</string>
+    <string name="network_unknown">未知</string>
+    <string name="network_none">无网络连接</string>
+
+    <!-- Errors -->
+    <string name="error_no_network">无网络连接</string>
+    <string name="error_test_failed">测试失败</string>
+    <string name="error_server_unavailable">服务器不可用</string>
+    <string name="error_unknown">发生未知错误</string>
+
+    <!-- Permissions -->
+    <string name="permission_network_title">网络权限</string>
+    <string name="permission_network_desc">测试网速所需</string>
+    <string name="permission_location_title">位置权限</string>
+    <string name="permission_location_desc">用于查找最近的测试服务器</string>
+
+    <!-- Common -->
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="delete">删除</string>
+    <string name="confirm">确认</string>
+    <string name="back">返回</string>
+    <string name="loading">加载中…</string>
+</resources>
