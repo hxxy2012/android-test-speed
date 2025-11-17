@@ -46,4 +46,7 @@
     <!-- System Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Launcher Icon -->
+    <color name="ic_launcher_background">#3DDC84</color>
 </resources>
