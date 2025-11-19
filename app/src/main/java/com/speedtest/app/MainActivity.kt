@@ -78,15 +78,25 @@ class MainActivity : ComponentActivity() {
 
         // Initialize on first launch
         lifecycleScope.launch {
-            val isFirstLaunch = preferencesManager.isFirstLaunch.first()
-            if (isFirstLaunch) {
-                // Initialize default servers
-                initializeServersUseCase()
-                preferencesManager.setFirstLaunchComplete()
-            }
+            try {
+                val isFirstLaunch = preferencesManager.isFirstLaunch.first()
+                if (isFirstLaunch) {
+                    // Initialize default servers (don't fail if this errors)
+                    try {
+                        initializeServersUseCase()
+                    } catch (e: Exception) {
+                        // Log error but don't crash - servers can be loaded later
+                        android.util.Log.e("MainActivity", "Failed to initialize servers", e)
+                    }
+                    preferencesManager.setFirstLaunchComplete()
+                }
 
-            // Setup auto test if enabled
-            setupAutoTest()
+                // Setup auto test if enabled
+                setupAutoTest()
+            } catch (e: Exception) {
+                // Catch any errors during initialization to prevent crashes
+                android.util.Log.e("MainActivity", "Initialization error", e)
+            }
         }
     }
 
