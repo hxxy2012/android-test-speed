@@ -34,37 +34,73 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        observeNetworkInfo()
-        observeSpeedUnit()
-        observeSelectedServer()
-        loadServers()
+        try {
+            observeNetworkInfo()
+            observeSpeedUnit()
+            observeSelectedServer()
+            loadServers()
+        } catch (e: Exception) {
+            android.util.Log.e("HomeViewModel", "Initialization error", e)
+            // Don't crash - app can still function with default state
+        }
     }
 
     private fun observeNetworkInfo() {
         viewModelScope.launch {
-            getNetworkInfoUseCase.getNetworkInfo().collect { networkInfo ->
-                _uiState.update { it.copy(networkInfo = networkInfo) }
+            try {
+                getNetworkInfoUseCase.getNetworkInfo()
+                    .catch { e ->
+                        android.util.Log.e("HomeViewModel", "Error observing network info", e)
+                        emit(NetworkInfo()) // Emit default
+                    }
+                    .collect { networkInfo ->
+                        _uiState.update { it.copy(networkInfo = networkInfo) }
+                    }
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Failed to observe network info", e)
             }
         }
     }
 
     private fun observeSpeedUnit() {
         viewModelScope.launch {
-            preferencesManager.speedUnit.collect { unit ->
-                _uiState.update { it.copy(speedUnit = unit) }
+            try {
+                preferencesManager.speedUnit
+                    .catch { e ->
+                        android.util.Log.e("HomeViewModel", "Error observing speed unit", e)
+                        emit(SpeedUnit.MBPS) // Emit default
+                    }
+                    .collect { unit ->
+                        _uiState.update { it.copy(speedUnit = unit) }
+                    }
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Failed to observe speed unit", e)
             }
         }
     }
 
     private fun observeSelectedServer() {
         viewModelScope.launch {
-            preferencesManager.selectedServerId.collect { serverId ->
-                if (serverId != null) {
-                    val server = getServersUseCase.getServerById(serverId)
-                    if (server != null) {
-                        _uiState.update { it.copy(selectedServer = server) }
+            try {
+                preferencesManager.selectedServerId
+                    .catch { e ->
+                        android.util.Log.e("HomeViewModel", "Error observing selected server", e)
+                        emit(null) // Emit null
                     }
-                }
+                    .collect { serverId ->
+                        if (serverId != null) {
+                            try {
+                                val server = getServersUseCase.getServerById(serverId)
+                                if (server != null) {
+                                    _uiState.update { it.copy(selectedServer = server) }
+                                }
+                            } catch (e: Exception) {
+                                android.util.Log.e("HomeViewModel", "Error getting server by ID", e)
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Failed to observe selected server", e)
             }
         }
     }
@@ -79,6 +115,7 @@ class HomeViewModel @Inject constructor(
                 val server = getServersUseCase.getFastestServer()
                 _uiState.update { it.copy(selectedServer = server) }
             } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Failed to load servers", e)
                 // Use default server if sync fails
             }
         }

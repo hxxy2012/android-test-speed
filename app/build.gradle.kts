@@ -152,4 +152,18 @@ dependencies {
 // Allow references to generated code
 kapt {
     correctErrorTypes = true
+
+    // Add JVM arguments to fix KAPT module access issues with Java 9+
+    javacOptions {
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED")
+        option("--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED")
+        option("--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED")
+        option("--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED")
+    }
 }
