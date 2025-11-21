@@ -124,77 +124,61 @@ class ServerRepositoryImpl @Inject constructor(
      */
     private fun getDefaultServers(): List<Server> {
         return listOf(
+            // Localhost for testing with PHP server on same device
             Server(
-                id = "server_cn_beijing_1",
-                name = "Beijing Server 1",
-                country = "China",
-                city = "Beijing",
-                host = "speedtest-bj1.example.com",
+                id = "server_localhost",
+                name = "Local Server (Device)",
+                country = "Local",
+                city = "Local",
+                host = "localhost",
                 port = 8080,
-                latitude = 39.9042,
-                longitude = 116.4074,
-                sponsor = "Example ISP",
-                isActive = true
+                latitude = 0.0,
+                longitude = 0.0,
+                sponsor = "Local Testing",
+                isActive = true,
+                lastPing = 1
             ),
+            // Android emulator host
             Server(
-                id = "server_cn_shanghai_1",
-                name = "Shanghai Server 1",
-                country = "China",
-                city = "Shanghai",
-                host = "speedtest-sh1.example.com",
+                id = "server_emulator_host",
+                name = "Local Server (Emulator)",
+                country = "Local",
+                city = "Local",
+                host = "10.0.2.2",
                 port = 8080,
-                latitude = 31.2304,
-                longitude = 121.4737,
-                sponsor = "Example ISP",
-                isActive = true
+                latitude = 0.0,
+                longitude = 0.0,
+                sponsor = "Local Testing",
+                isActive = true,
+                lastPing = 1
             ),
+            // Real local network (update with your actual IP)
             Server(
-                id = "server_cn_guangzhou_1",
-                name = "Guangzhou Server 1",
-                country = "China",
-                city = "Guangzhou",
-                host = "speedtest-gz1.example.com",
+                id = "server_local_network",
+                name = "Local Network Server",
+                country = "Local",
+                city = "Local",
+                host = "192.168.1.100",
                 port = 8080,
-                latitude = 23.1291,
-                longitude = 113.2644,
-                sponsor = "Example ISP",
-                isActive = true
+                latitude = 0.0,
+                longitude = 0.0,
+                sponsor = "Local Network",
+                isActive = true,
+                lastPing = 1
             ),
+            // Public speedtest servers (may work)
             Server(
-                id = "server_hk_1",
-                name = "Hong Kong Server 1",
-                country = "Hong Kong",
-                city = "Hong Kong",
-                host = "speedtest-hk1.example.com",
-                port = 8080,
-                latitude = 22.3193,
-                longitude = 114.1694,
-                sponsor = "Example ISP",
-                isActive = true
-            ),
-            Server(
-                id = "server_us_la_1",
-                name = "Los Angeles Server 1",
-                country = "United States",
-                city = "Los Angeles",
-                host = "speedtest-la1.example.com",
-                port = 8080,
-                latitude = 34.0522,
-                longitude = -118.2437,
-                sponsor = "Example ISP",
-                isActive = true
-            ),
-            Server(
-                id = "server_sg_1",
-                name = "Singapore Server 1",
-                country = "Singapore",
-                city = "Singapore",
-                host = "speedtest-sg1.example.com",
-                port = 8080,
-                latitude = 1.3521,
-                longitude = 103.8198,
-                sponsor = "Example ISP",
-                isActive = true
+                id = "server_cloudflare",
+                name = "Cloudflare Speed Test",
+                country = "Global",
+                city = "Global CDN",
+                host = "speed.cloudflare.com",
+                port = 443,
+                latitude = 0.0,
+                longitude = 0.0,
+                sponsor = "Cloudflare",
+                isActive = true,
+                lastPing = 50
             )
         )
     }

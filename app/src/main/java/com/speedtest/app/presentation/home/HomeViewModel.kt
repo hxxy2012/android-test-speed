@@ -105,15 +105,15 @@ class HomeViewModel @Inject constructor(
     fun startTest() {
         viewModelScope.launch {
             try {
-                val networkInfo = _uiState.value.networkInfo
-                if (!networkInfo.isConnected) {
-                    _uiState.update { it.copy(error = "No network connection") }
-                    return@launch
-                }
+                // Don't block on network check - let the test attempt and fail naturally
+                Log.d(TAG, "Starting speed test...")
 
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
                 val serverId = _uiState.value.selectedServer?.id
+                if (serverId == null) {
+                    Log.w(TAG, "No server selected, will use default")
+                }
 
                 executeSpeedTestUseCase(serverId).collect { progress ->
                     _uiState.update { it.copy(
@@ -122,6 +122,7 @@ class HomeViewModel @Inject constructor(
                     ) }
 
                     if (progress.isCompleted) {
+                        Log.d(TAG, "Test completed successfully")
                         try {
                             val notificationEnabled = preferencesManager.notificationEnabled.first()
                             if (notificationEnabled) {
@@ -136,13 +137,18 @@ class HomeViewModel @Inject constructor(
                             Log.e(TAG, "Error showing notification", e)
                         }
                     }
+
+                    if (progress.hasError) {
+                        Log.e(TAG, "Test error: ${progress.error}")
+                        _uiState.update { it.copy(error = progress.error) }
+                    }
                 }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Error in startTest", e)
                 _uiState.update { it.copy(
                     isLoading = false,
-                    error = e.message ?: "Unknown error"
+                    error = e.message ?: "Test failed - please check server configuration"
                 ) }
             }
         }
@@ -210,7 +216,7 @@ class HomeViewModel @Inject constructor(
 data class HomeUiState(
     val isLoading: Boolean = false,
     val testProgress: TestProgress = TestProgress(),
-    val networkInfo: NetworkInfo = NetworkInfo(),
+    val networkInfo: NetworkInfo = NetworkInfo(isConnected = true), // Default to connected
     val selectedServer: com.speedtest.app.data.local.entity.Server? = null,
     val speedUnit: SpeedUnit = SpeedUnit.MBPS,
     val error: String? = null
@@ -219,5 +225,6 @@ data class HomeUiState(
         get() = testProgress.isInProgress
 
     val canStartTest: Boolean
-        get() = !isLoading && !isTestRunning && networkInfo.isConnected
+        get() = !isLoading && !isTestRunning
+        // Remove network check - let test fail naturally if no network
 }
