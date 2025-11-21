@@ -77,11 +77,39 @@ class NetworkRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getCurrentNetworkInfoInternal(): NetworkInfo {
-        val isConnected = NetworkUtils.isNetworkConnected(context)
-        val networkType = NetworkUtils.getNetworkType(context)
-        val operator = NetworkUtils.getNetworkOperator(context)
-        val ipAddress = getExternalIpAddress()
-        val isMetered = NetworkUtils.isNetworkMetered(context)
+        // Use simpler check - just check if we have any network
+        val isConnected = try {
+            NetworkUtils.isNetworkConnected(context)
+        } catch (e: Exception) {
+            // If check fails, assume connected to not block functionality
+            android.util.Log.e("NetworkRepository", "Failed to check network", e)
+            true
+        }
+
+        val networkType = try {
+            NetworkUtils.getNetworkType(context)
+        } catch (e: Exception) {
+            android.util.Log.e("NetworkRepository", "Failed to get network type", e)
+            NetworkType.UNKNOWN
+        }
+
+        val operator = try {
+            NetworkUtils.getNetworkOperator(context)
+        } catch (e: Exception) {
+            "Unknown"
+        }
+
+        val ipAddress = try {
+            getExternalIpAddress()
+        } catch (e: Exception) {
+            "0.0.0.0"
+        }
+
+        val isMetered = try {
+            NetworkUtils.isNetworkMetered(context)
+        } catch (e: Exception) {
+            false
+        }
 
         return NetworkInfo(
             networkType = networkType,

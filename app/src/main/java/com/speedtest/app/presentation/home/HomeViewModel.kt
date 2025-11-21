@@ -1,6 +1,7 @@
 package com.speedtest.app.presentation.home
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.speedtest.app.data.local.datastore.PreferencesManager
@@ -40,24 +41,18 @@ class HomeViewModel @Inject constructor(
             observeSelectedServer()
             loadServers()
         } catch (e: Exception) {
-            android.util.Log.e("HomeViewModel", "Initialization error", e)
-            // Don't crash - app can still function with default state
+            Log.e(TAG, "Initialization error", e)
         }
     }
 
     private fun observeNetworkInfo() {
         viewModelScope.launch {
             try {
-                getNetworkInfoUseCase.getNetworkInfo()
-                    .catch { e ->
-                        android.util.Log.e("HomeViewModel", "Error observing network info", e)
-                        emit(NetworkInfo()) // Emit default
-                    }
-                    .collect { networkInfo ->
-                        _uiState.update { it.copy(networkInfo = networkInfo) }
-                    }
+                getNetworkInfoUseCase.getNetworkInfo().collect { networkInfo ->
+                    _uiState.update { it.copy(networkInfo = networkInfo) }
+                }
             } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Failed to observe network info", e)
+                Log.e(TAG, "Error observing network info", e)
             }
         }
     }
@@ -65,16 +60,11 @@ class HomeViewModel @Inject constructor(
     private fun observeSpeedUnit() {
         viewModelScope.launch {
             try {
-                preferencesManager.speedUnit
-                    .catch { e ->
-                        android.util.Log.e("HomeViewModel", "Error observing speed unit", e)
-                        emit(SpeedUnit.MBPS) // Emit default
-                    }
-                    .collect { unit ->
-                        _uiState.update { it.copy(speedUnit = unit) }
-                    }
+                preferencesManager.speedUnit.collect { unit ->
+                    _uiState.update { it.copy(speedUnit = unit) }
+                }
             } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Failed to observe speed unit", e)
+                Log.e(TAG, "Error observing speed unit", e)
             }
         }
     }
@@ -82,25 +72,20 @@ class HomeViewModel @Inject constructor(
     private fun observeSelectedServer() {
         viewModelScope.launch {
             try {
-                preferencesManager.selectedServerId
-                    .catch { e ->
-                        android.util.Log.e("HomeViewModel", "Error observing selected server", e)
-                        emit(null) // Emit null
-                    }
-                    .collect { serverId ->
-                        if (serverId != null) {
-                            try {
-                                val server = getServersUseCase.getServerById(serverId)
-                                if (server != null) {
-                                    _uiState.update { it.copy(selectedServer = server) }
-                                }
-                            } catch (e: Exception) {
-                                android.util.Log.e("HomeViewModel", "Error getting server by ID", e)
+                preferencesManager.selectedServerId.collect { serverId ->
+                    if (serverId != null) {
+                        try {
+                            val server = getServersUseCase.getServerById(serverId)
+                            if (server != null) {
+                                _uiState.update { it.copy(selectedServer = server) }
                             }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error getting server", e)
                         }
                     }
+                }
             } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Failed to observe selected server", e)
+                Log.e(TAG, "Error observing selected server", e)
             }
         }
     }
@@ -108,15 +93,11 @@ class HomeViewModel @Inject constructor(
     private fun loadServers() {
         viewModelScope.launch {
             try {
-                // Sync servers from remote
                 getServersUseCase.syncServers()
-
-                // Get fastest server
                 val server = getServersUseCase.getFastestServer()
                 _uiState.update { it.copy(selectedServer = server) }
             } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Failed to load servers", e)
-                // Use default server if sync fails
+                Log.e(TAG, "Error loading servers", e)
             }
         }
     }
@@ -124,16 +105,15 @@ class HomeViewModel @Inject constructor(
     fun startTest() {
         viewModelScope.launch {
             try {
-                // Check network connection first
-                val networkInfo = _uiState.value.networkInfo
-                if (!networkInfo.isConnected) {
-                    _uiState.update { it.copy(error = "No network connection") }
-                    return@launch
-                }
+                // Don't block on network check - let the test attempt and fail naturally
+                Log.d(TAG, "Starting speed test...")
 
                 _uiState.update { it.copy(isLoading = true, error = null) }
 
                 val serverId = _uiState.value.selectedServer?.id
+                if (serverId == null) {
+                    Log.w(TAG, "No server selected, will use default")
+                }
 
                 executeSpeedTestUseCase(serverId).collect { progress ->
                     _uiState.update { it.copy(
@@ -141,24 +121,34 @@ class HomeViewModel @Inject constructor(
                         isLoading = progress.isInProgress
                     ) }
 
-                    // Show notification when test completes
                     if (progress.isCompleted) {
-                        val notificationEnabled = preferencesManager.notificationEnabled.first()
-                        if (notificationEnabled) {
-                            NotificationHelper.showTestCompletionNotification(
-                                context,
-                                downloadSpeed = progress.avgDownloadSpeed,
-                                uploadSpeed = progress.avgUploadSpeed,
-                                ping = progress.avgPing
-                            )
+                        Log.d(TAG, "Test completed successfully")
+                        try {
+                            val notificationEnabled = preferencesManager.notificationEnabled.first()
+                            if (notificationEnabled) {
+                                NotificationHelper.showTestCompletionNotification(
+                                    context,
+                                    downloadSpeed = progress.avgDownloadSpeed,
+                                    uploadSpeed = progress.avgUploadSpeed,
+                                    ping = progress.avgPing
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error showing notification", e)
                         }
+                    }
+
+                    if (progress.hasError) {
+                        Log.e(TAG, "Test error: ${progress.error}")
+                        _uiState.update { it.copy(error = progress.error) }
                     }
                 }
 
             } catch (e: Exception) {
+                Log.e(TAG, "Error in startTest", e)
                 _uiState.update { it.copy(
                     isLoading = false,
-                    error = e.message ?: "Unknown error"
+                    error = e.message ?: "Test failed - please check server configuration"
                 ) }
             }
         }
@@ -166,42 +156,57 @@ class HomeViewModel @Inject constructor(
 
     fun stopTest() {
         viewModelScope.launch {
-            executeSpeedTestUseCase.stop()
-            _uiState.update { it.copy(
-                isLoading = false,
-                testProgress = TestProgress(phase = TestPhase.IDLE)
-            ) }
+            try {
+                executeSpeedTestUseCase.stop()
+                _uiState.update { it.copy(
+                    isLoading = false,
+                    testProgress = TestProgress(phase = TestPhase.IDLE)
+                ) }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error stopping test", e)
+            }
         }
     }
 
     fun selectServer(serverId: String?) {
         viewModelScope.launch {
-            val server = if (serverId != null) {
-                getServersUseCase.getServerById(serverId)
-            } else {
-                getServersUseCase.getFastestServer()
-            }
-            _uiState.update { it.copy(selectedServer = server) }
+            try {
+                val server = if (serverId != null) {
+                    getServersUseCase.getServerById(serverId)
+                } else {
+                    getServersUseCase.getFastestServer()
+                }
+                _uiState.update { it.copy(selectedServer = server) }
 
-            // Save preference
-            serverId?.let {
-                preferencesManager.setSelectedServerId(it)
+                serverId?.let {
+                    preferencesManager.setSelectedServerId(it)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error selecting server", e)
             }
         }
     }
 
     fun toggleSpeedUnit() {
         viewModelScope.launch {
-            val newUnit = when (_uiState.value.speedUnit) {
-                SpeedUnit.MBPS -> SpeedUnit.MBYTES
-                SpeedUnit.MBYTES -> SpeedUnit.MBPS
+            try {
+                val newUnit = when (_uiState.value.speedUnit) {
+                    SpeedUnit.MBPS -> SpeedUnit.MBYTES
+                    SpeedUnit.MBYTES -> SpeedUnit.MBPS
+                }
+                preferencesManager.setSpeedUnit(newUnit)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error toggling speed unit", e)
             }
-            preferencesManager.setSpeedUnit(newUnit)
         }
     }
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    companion object {
+        private const val TAG = "HomeViewModel"
     }
 }
 
@@ -211,7 +216,7 @@ class HomeViewModel @Inject constructor(
 data class HomeUiState(
     val isLoading: Boolean = false,
     val testProgress: TestProgress = TestProgress(),
-    val networkInfo: NetworkInfo = NetworkInfo(),
+    val networkInfo: NetworkInfo = NetworkInfo(isConnected = true), // Default to connected
     val selectedServer: com.speedtest.app.data.local.entity.Server? = null,
     val speedUnit: SpeedUnit = SpeedUnit.MBPS,
     val error: String? = null
@@ -220,5 +225,6 @@ data class HomeUiState(
         get() = testProgress.isInProgress
 
     val canStartTest: Boolean
-        get() = !isLoading && !isTestRunning && networkInfo.isConnected
+        get() = !isLoading && !isTestRunning
+        // Remove network check - let test fail naturally if no network
 }
